@@ -5,40 +5,30 @@ export default function Home() {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [answer, setAnswer] = useState('');
-  const [apiKey, setApiKey] = useState('');
 
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
-    if (!apiKey.trim()) {
-      alert('Masukkan Gemini API Key terlebih dahulu di kolom bawah!');
-      return;
-    }
 
     setLoading(true);
     setAnswer('');
 
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: query }] }]
-          })
-        }
-      );
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: query }),
+      });
 
       const data = await response.json();
       
-      if (data.candidates && data.candidates[0].content.parts[0].text) {
-        setAnswer(data.candidates[0].content.parts[0].text);
+      if (response.ok) {
+        setAnswer(data.answer);
       } else {
-        setAnswer('Gagal mendapatkan respons. Periksa kembali API Key Anda.');
+        setAnswer(data.error || 'Terjadi kesalahan pada server.');
       }
     } catch (err) {
-      setAnswer('Terjadi kesalahan koneksi.');
+      setAnswer('Gagal terhubung ke server.');
     } finally {
       setLoading(false);
     }
@@ -54,8 +44,7 @@ export default function Home() {
           Mesin pencari & asisten AI pribadi Anda.
         </p>
 
-        {/* Form Input Pertanyaan */}
-        <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
           <input
             type="text"
             value={query}
@@ -72,21 +61,6 @@ export default function Home() {
           </button>
         </form>
 
-        {/* Input API Key langsung di halaman agar tidak ribet di Vercel */}
-        <div style={{ marginBottom: '24px', textAlign: 'left' }}>
-          <label style={{ fontSize: '0.75rem', color: '#71717a', display: 'block', marginBottom: '4px' }}>
-            Masukkan Gemini API Key Anda (agar bisa langsung jalan):
-          </label>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="AIzaSy..."
-            style={{ width: '100%', backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '8px', padding: '8px 12px', color: 'white', fontSize: '0.85rem', outline: 'none' }}
-          />
-        </div>
-
-        {/* Kotak Jawaban */}
         {answer && (
           <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '16px', padding: '20px', textAlign: 'left', whiteSpace: 'pre-wrap', fontSize: '0.9rem', lineHeight: '1.6' }}>
             <strong style={{ display: 'block', marginBottom: '8px', color: '#34d399' }}>Jawaban Agil.ai:</strong>
