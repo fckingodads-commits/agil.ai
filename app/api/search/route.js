@@ -10,12 +10,10 @@ export async function POST(req) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // Menggunakan model standar yang universal
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
-    const result = await model.generateContent(
-      `Jawablah pertanyaan berikut dengan akurat dan informatif dalam bahasa Indonesia: ${prompt}`
-    );
-
+    const result = await model.generateContent(prompt);
     const response = await result.response;
     const answerText = response.text();
 
